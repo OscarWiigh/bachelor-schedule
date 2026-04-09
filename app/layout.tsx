@@ -5,6 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Bachelor Schedule",
   description: "Weekend timeline in Prague time — Friday through Sunday.",
+  icons: {
+    icon: [{ url: "/favicon.jpg", type: "image/jpeg" }],
+    apple: [{ url: "/favicon.jpg", type: "image/jpeg" }],
+  },
   appleWebApp: {
     capable: true,
     title: "Bachelor Schedule",
