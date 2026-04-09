@@ -11,10 +11,8 @@ export function ActivityCard({ activity }: Props) {
   const cat = CATEGORIES[activity.category];
   const mapUrl = activity.mapUrl?.trim();
 
-  const shellClass = `rounded-2xl border border-zinc-800/80 border-l-4 bg-zinc-900/60 p-4 shadow-sm backdrop-blur-sm ${cat.cardAccentClass} ${
-    mapUrl
-      ? "cursor-pointer transition hover:ring-2 hover:ring-sky-400/50 hover:brightness-[1.03] active:scale-[0.995]"
-      : ""
+  const shellClass = `rounded-2xl border border-zinc-800/80 border-l-4 bg-zinc-900/60 p-4 shadow-sm backdrop-blur-sm outline-none ring-offset-2 ring-offset-zinc-950 transition hover:brightness-[1.03] ${cat.cardAccentClass} ${cat.hoverRingClass} ${
+    mapUrl ? "cursor-pointer active:scale-[0.995]" : ""
   }`;
 
   const body = (
@@ -50,7 +48,7 @@ export function ActivityCard({ activity }: Props) {
         href={mapUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${shellClass} block text-left no-underline outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70`}
+        className={`${shellClass} block text-left no-underline`}
         aria-label={`Open link: ${activity.title}`}
       >
         {body}
