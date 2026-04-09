@@ -6,14 +6,14 @@ function mapsSearch(query: string): string {
 }
 
 /**
- * Friday schedule — Europe/Prague, 11 Apr 2026 (CEST = UTC+2). Stored as UTC ISO.
+ * Friday–Sunday — Europe/Prague, 10–12 Apr 2026 (CEST = UTC+2). Stored as UTC ISO.
  */
 export const ACTIVITIES = [
   {
     id: "fri-flight",
     title: "Flight",
-    start: "2026-04-11T07:40:00.000Z", // 09:40 Prague
-    end: "2026-04-11T09:30:00.000Z", // 11:30 Prague
+    start: "2026-04-10T07:40:00.000Z", // Fri 09:40 Prague
+    end: "2026-04-10T09:30:00.000Z", // 11:30 Prague
     category: "transport",
     bookedBy: "Oscar",
     mapUrl: mapsSearch("Václav Havel Airport Prague PRG"),
@@ -21,8 +21,8 @@ export const ACTIVITIES = [
   {
     id: "fri-bags",
     title: "Leave bag",
-    start: "2026-04-11T10:00:00.000Z", // 12:00
-    end: "2026-04-11T11:00:00.000Z", // 13:00
+    start: "2026-04-10T10:00:00.000Z", // 12:00
+    end: "2026-04-10T11:00:00.000Z", // 13:00
     category: "lodging",
     bookedBy: "",
     mapUrl: AIRBNB_MAPS_URL,
@@ -30,8 +30,8 @@ export const ACTIVITIES = [
   {
     id: "fri-fleku",
     title: "Dinner at U Fleků",
-    start: "2026-04-11T11:30:00.000Z", // 13:30
-    end: "2026-04-11T13:30:00.000Z", // 15:30
+    start: "2026-04-10T11:30:00.000Z", // 13:30
+    end: "2026-04-10T13:30:00.000Z", // 15:30
     category: "food",
     bookedBy: "Filip",
     mapUrl: mapsSearch("U Fleků Prague"),
@@ -39,8 +39,8 @@ export const ACTIVITIES = [
   {
     id: "fri-hemingway",
     title: "Drinks at Hemingway Bar",
-    start: "2026-04-11T16:00:00.000Z", // 18:00
-    end: "2026-04-11T17:00:00.000Z", // 19:00
+    start: "2026-04-10T16:00:00.000Z", // 18:00
+    end: "2026-04-10T17:00:00.000Z", // 19:00
     category: "drinks",
     bookedBy: "Filip",
     mapUrl: mapsSearch("Hemingway Bar Prague"),
@@ -48,8 +48,8 @@ export const ACTIVITIES = [
   {
     id: "fri-kotrba",
     title: "Dinner at U Mateje Kotrby",
-    start: "2026-04-11T17:00:00.000Z", // 19:00
-    end: "2026-04-11T19:30:00.000Z", // 21:30
+    start: "2026-04-10T17:00:00.000Z", // 19:00
+    end: "2026-04-10T19:30:00.000Z", // 21:30
     category: "food",
     bookedBy: "Oscar",
     mapUrl: mapsSearch("U Mateje Kotrby Prague"),
@@ -57,8 +57,8 @@ export const ACTIVITIES = [
   {
     id: "fri-chill",
     title: "Chill bar vibes",
-    start: "2026-04-11T19:30:00.000Z", // 21:30
-    end: "2026-04-12T00:00:00.000Z", // 02:00 Sat Prague
+    start: "2026-04-10T19:30:00.000Z", // 21:30
+    end: "2026-04-11T00:00:00.000Z", // 02:00 Sat Prague
     category: "drinks",
     bookedBy: "",
   },
