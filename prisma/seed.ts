@@ -1,0 +1,27 @@
+import { PrismaClient } from "@prisma/client";
+import { ACTIVITIES } from "../data/activities";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  await prisma.activity.deleteMany();
+  await prisma.activity.createMany({
+    data: ACTIVITIES.map((a) => ({
+      id: a.id,
+      title: a.title,
+      startAt: new Date(a.start),
+      endAt: new Date(a.end),
+      category: a.category,
+      bookedBy: a.bookedBy,
+      mapUrl: a.mapUrl ?? null,
+    })),
+  });
+}
+
+main()
+  .then(() => prisma.$disconnect())
+  .catch((e) => {
+    console.error(e);
+    void prisma.$disconnect();
+    process.exit(1);
+  });
