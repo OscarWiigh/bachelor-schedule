@@ -53,7 +53,7 @@ export default function Home() {
                 +46 70 748 45 83
               </a>
             </div>
-            <div className="pt-3">
+            <div className="py-3">
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-sky-200/90">
                 AirBnB
               </p>
@@ -65,6 +65,11 @@ export default function Home() {
               >
                 AirBnB address
               </a>
+            </div>
+            <div className="pt-3">
+              <p className="text-base font-bold tabular-nums tracking-tight text-white">
+                Main Door code: 9517#
+              </p>
             </div>
           </div>
         </aside>
