@@ -1,16 +1,17 @@
 "use client";
 
-import { useScheduleActivities } from "@/components/ScheduleActivitiesProvider";
+import { useTripActivities } from "@/components/ScheduleActivitiesProvider";
 import { newActivityId } from "@/lib/activities";
 import { CATEGORIES, CATEGORY_IDS, type CategoryId } from "@/lib/categories";
 import { hasBookedByForDisplay } from "@/lib/booked-by-display";
 import {
-  pragueDateTimeToUtcIso,
-  utcIsoToPragueDateTime,
-} from "@/lib/prague-local-input";
-import type { Activity } from "@/lib/types";
+  tripDateTimeToUtcIso,
+  utcIsoToTripDateTime,
+} from "@/lib/trip-local-input";
+import type { Activity, Trip } from "@/lib/types";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { SchedulePageSettingsEditor } from "@/components/SchedulePageSettingsEditor";
 
 const emptyForm = () => ({
   title: "",
@@ -23,17 +24,20 @@ const emptyForm = () => ({
   mapUrl: "",
 });
 
-export function ScheduleEditor() {
+type Props = { trip: Trip };
+
+export function ScheduleEditor({ trip }: Props) {
   const { activities, setActivities, isLoading, error, refetch } =
-    useScheduleActivities();
+    useTripActivities();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [currentTrip, setCurrentTrip] = useState<Trip>(trip);
 
   const loadIntoForm = useCallback((a: Activity) => {
-    const s = utcIsoToPragueDateTime(a.start);
-    const e = utcIsoToPragueDateTime(a.end);
+    const s = utcIsoToTripDateTime(a.start, currentTrip.timezone);
+    const e = utcIsoToTripDateTime(a.end, currentTrip.timezone);
     setEditingId(a.id);
     setForm({
       title: a.title,
@@ -46,7 +50,7 @@ export function ScheduleEditor() {
       mapUrl: a.mapUrl ?? "",
     });
     setMessage(null);
-  }, []);
+  }, [currentTrip.timezone]);
 
   const clearForm = useCallback(() => {
     setEditingId(null);
@@ -61,8 +65,8 @@ export function ScheduleEditor() {
     let startIso: string;
     let endIso: string;
     try {
-      startIso = pragueDateTimeToUtcIso(form.startDate, form.startTime);
-      endIso = pragueDateTimeToUtcIso(form.endDate, form.endTime);
+      startIso = tripDateTimeToUtcIso(form.startDate, form.startTime, currentTrip.timezone);
+      endIso = tripDateTimeToUtcIso(form.endDate, form.endTime, currentTrip.timezone);
     } catch {
       setMessage("Could not save — check date and time fields.");
       return;
@@ -81,6 +85,7 @@ export function ScheduleEditor() {
 
     const next: Activity = {
       id: editingId ?? newActivityId(),
+      tripId: currentTrip.id,
       title: form.title.trim() || "Untitled",
       start: startIso,
       end: endIso,
@@ -127,27 +132,31 @@ export function ScheduleEditor() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-500/90">
-              Unlisted editor
+              Editor
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-50">
               Edit schedule
             </h1>
             <p className="mt-2 text-sm text-zinc-500">
               Times are{" "}
-              <span className="font-medium text-zinc-400">Europe/Prague</span>.
-              Entries are stored in your{" "}
-              <span className="font-medium text-zinc-400">PostgreSQL</span>{" "}
-              database via the API.
+              <span className="font-medium text-zinc-400">{currentTrip.timezone}</span>.
             </p>
           </div>
           <Link
-            href="/"
+            href={`/${currentTrip.id}`}
             className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-zinc-200 transition hover:border-orange-500/50 hover:text-orange-200"
           >
             Timeline
           </Link>
         </div>
       </header>
+
+      <section className="mb-8">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.15em] text-zinc-400">
+          Trip settings
+        </h2>
+        <SchedulePageSettingsEditor trip={currentTrip} onSaved={setCurrentTrip} />
+      </section>
 
       {isLoading ? (
         <p className="mb-4 text-sm text-zinc-500">Loading entries…</p>
@@ -337,8 +346,8 @@ export function ScheduleEditor() {
         <ul className="space-y-2">
           {activities.map((a) => {
             const cat = CATEGORIES[a.category];
-            const s = utcIsoToPragueDateTime(a.start);
-            const e = utcIsoToPragueDateTime(a.end);
+            const s = utcIsoToTripDateTime(a.start, currentTrip.timezone);
+            const e = utcIsoToTripDateTime(a.end, currentTrip.timezone);
             return (
               <li
                 key={a.id}

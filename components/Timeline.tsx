@@ -1,14 +1,17 @@
 "use client";
 
-import { useScheduleActivities } from "@/components/ScheduleActivitiesProvider";
+import { useTripActivities } from "@/components/ScheduleActivitiesProvider";
 import { buildTimelineRows } from "@/lib/timeline-rows";
-import { getWeekendBounds } from "@/lib/prague-time";
+import type { Trip } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityCard } from "./ActivityCard";
 import { NowMarker } from "./NowMarker";
+import Link from "next/link";
 
-export function Timeline() {
-  const { activities, isLoading, error, refetch } = useScheduleActivities();
+type Props = { trip: Trip };
+
+export function Timeline({ trip }: Props) {
+  const { activities, isLoading, error, refetch } = useTripActivities();
   const scrollRef = useRef<HTMLDivElement>(null);
   const nowRef = useRef<HTMLDivElement>(null);
   const topAnchorRef = useRef<HTMLDivElement>(null);
@@ -22,12 +25,13 @@ export function Timeline() {
   }, []);
 
   const rows = useMemo(
-    () => buildTimelineRows(activities, now),
-    [activities, now],
+    () => buildTimelineRows(activities, trip.timezone, trip.startDate, trip.endDate, now),
+    [activities, trip.timezone, trip.startDate, trip.endDate, now],
   );
 
   const scrollToNow = useCallback(() => {
-    const { start, end } = getWeekendBounds();
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
     requestAnimationFrame(() => {
       if (now < start) {
         topAnchorRef.current?.scrollIntoView({
@@ -48,7 +52,7 @@ export function Timeline() {
         block: "center",
       });
     });
-  }, [now]);
+  }, [now, trip.startDate, trip.endDate]);
 
   useEffect(() => {
     if (isLoading || activities.length === 0) return;
@@ -83,12 +87,12 @@ export function Timeline() {
         {!isLoading && !error && activities.length === 0 ? (
           <p className="py-8 text-center text-sm text-zinc-500">
             No events yet. Use{" "}
-            <a
-              href="/edit"
+            <Link
+              href={`/${trip.id}/edit`}
               className="font-medium text-orange-400 underline underline-offset-2"
             >
               Edit
-            </a>{" "}
+            </Link>{" "}
             to add some.
           </p>
         ) : null}
@@ -111,7 +115,7 @@ export function Timeline() {
           }
           return (
             <div key={row.activity.id} className="py-2">
-              <ActivityCard activity={row.activity} />
+              <ActivityCard activity={row.activity} timezone={trip.timezone} />
             </div>
           );
         })

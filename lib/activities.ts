@@ -10,6 +10,7 @@ export function isActivity(x: unknown): x is Activity {
   const o = x as Record<string, unknown>;
   if (
     typeof o.id !== "string" ||
+    typeof o.tripId !== "string" ||
     typeof o.title !== "string" ||
     typeof o.start !== "string" ||
     typeof o.end !== "string" ||
@@ -49,19 +50,28 @@ export function newActivityId(): string {
   return `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export function parseActivitiesPutBody(
-  body: unknown,
-): { ok: true; data: Activity[] } | { ok: false; error: string } {
+export function normalizeActivities(body: unknown): Activity[] {
   if (!Array.isArray(body)) {
-    return { ok: false, error: "Body must be a JSON array of activities." };
+    throw new Error("Body must be a JSON array of activities.");
   }
   const out: Activity[] = [];
   for (let i = 0; i < body.length; i++) {
     const item = body[i];
     if (!isActivity(item)) {
-      return { ok: false, error: `Invalid activity at index ${i}.` };
+      throw new Error(`Invalid activity at index ${i}.`);
     }
     out.push(normalizeActivity(item));
   }
-  return { ok: true, data: sortActivities(out) };
+  return sortActivities(out);
+}
+
+export function parseActivitiesPutBody(
+  body: unknown,
+): { ok: true; data: Activity[] } | { ok: false; error: string } {
+  try {
+    const data = normalizeActivities(body);
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Invalid activities." };
+  }
 }

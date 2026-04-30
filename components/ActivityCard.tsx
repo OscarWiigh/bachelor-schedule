@@ -1,15 +1,17 @@
 import { CATEGORIES } from "@/lib/categories";
 import { hasBookedByForDisplay } from "@/lib/booked-by-display";
-import { formatPragueRange } from "@/lib/prague-time";
+import { formatTripTime } from "@/lib/trip-time";
 import type { Activity } from "@/lib/types";
 
-type Props = { activity: Activity };
+type Props = { activity: Activity; timezone: string };
 
-export function ActivityCard({ activity }: Props) {
-  const start = new Date(activity.start);
-  const end = new Date(activity.end);
+export function ActivityCard({ activity, timezone }: Props) {
+  const start = activity.start;
+  const end = activity.end;
   const cat = CATEGORIES[activity.category];
   const mapUrl = activity.mapUrl?.trim();
+
+  const timeRange = `${formatTripTime(start, timezone)}–${formatTripTime(end, timezone)}`;
 
   const shellClass = `rounded-2xl border border-zinc-800/80 border-l-4 bg-zinc-900/60 p-4 shadow-sm backdrop-blur-sm outline-none ring-offset-2 ring-offset-zinc-950 transition hover:brightness-[1.03] ${cat.cardAccentClass} ${cat.hoverRingClass} ${
     mapUrl ? "cursor-pointer active:scale-[0.995]" : ""
@@ -19,7 +21,7 @@ export function ActivityCard({ activity }: Props) {
     <>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-sm font-medium tabular-nums text-orange-200/90">
-          {formatPragueRange(start, end)}
+          {timeRange}
         </p>
         <span
           className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ring-1 ${cat.chipClass}`}
