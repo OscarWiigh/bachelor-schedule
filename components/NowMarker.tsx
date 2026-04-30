@@ -9,7 +9,7 @@ export const NowMarker = forwardRef<HTMLDivElement>(function NowMarker(_, ref) {
       className="scroll-mt-32 py-2"
       role="status"
       aria-live="polite"
-      aria-label="Current time in Prague"
+      aria-label="Current time"
     >
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-500 to-orange-500/80" />

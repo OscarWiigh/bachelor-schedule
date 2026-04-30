@@ -1,0 +1,12 @@
+{
+  "name": "Trip Schedule",
+  "short_name": "Trip Schedule",
+  "description": "Shared trip itinerary and schedule",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e293b",
+  "icons": [
+    { "src": "/favicon.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any maskable" }
+  ]
+}

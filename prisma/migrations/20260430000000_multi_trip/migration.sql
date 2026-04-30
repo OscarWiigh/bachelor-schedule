@@ -1,0 +1,41 @@
+-- Create trips table
+CREATE TABLE "trips" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "subtitle" TEXT NOT NULL DEFAULT '',
+    "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3) NOT NULL,
+    "good_to_know_md" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "trips_pkey" PRIMARY KEY ("id")
+);
+
+-- Seed the bachelor trip from existing schedule_page_settings data
+-- Dates: Fri 10 Apr – Sun 12 Apr 2026 Prague time (UTC stored)
+INSERT INTO "trips" ("id", "title", "subtitle", "timezone", "start_date", "end_date", "good_to_know_md")
+SELECT
+    'bachelor',
+    COALESCE((SELECT "title" FROM "schedule_page_settings" WHERE "id" = 'default'), 'Bachelor Schedule'),
+    COALESCE((SELECT "subtitle" FROM "schedule_page_settings" WHERE "id" = 'default'), ''),
+    'Europe/Prague',
+    '2026-04-09T22:00:00.000Z',
+    '2026-04-12T21:59:59.999Z',
+    '**Oscar** – [+46 70 147 66 88](tel:+46701476688)
+
+**Filip** – [+46 70 748 45 83](tel:+46707484583)
+
+**Main door code:** 9517#'
+WHERE NOT EXISTS (SELECT 1 FROM "trips" WHERE "id" = 'bachelor');
+
+-- Add trip_id to activities with default
+ALTER TABLE "activities" ADD COLUMN "trip_id" TEXT;
+UPDATE "activities" SET "trip_id" = 'bachelor';
+ALTER TABLE "activities" ALTER COLUMN "trip_id" SET NOT NULL;
+
+-- Add foreign key
+ALTER TABLE "activities" ADD CONSTRAINT "activities_trip_id_fkey"
+    FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Drop old settings table (data migrated above)
+DROP TABLE IF EXISTS "schedule_page_settings";

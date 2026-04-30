@@ -16,8 +16,6 @@ import {
   type ReactNode,
 } from "react";
 
-const BC_NAME = "bachelor-schedule";
-
 type ScheduleContextValue = {
   activities: Activity[];
   setActivities: (next: Activity[]) => Promise<void>;
@@ -28,8 +26,8 @@ type ScheduleContextValue = {
 
 const ScheduleContext = createContext<ScheduleContextValue | null>(null);
 
-async function fetchActivitiesFromApi(): Promise<Activity[]> {
-  const res = await fetch("/api/activities", { cache: "no-store" });
+async function fetchActivitiesFromApi(tripSlug: string): Promise<Activity[]> {
+  const res = await fetch(`/api/trips/${tripSlug}/activities`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Could not load schedule.");
   }
@@ -41,9 +39,15 @@ async function fetchActivitiesFromApi(): Promise<Activity[]> {
   return sortActivities(valid);
 }
 
-export function ScheduleActivitiesProvider({ children }: { children: ReactNode }) {
-  const [activities, setActivitiesState] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+type Props = {
+  children: ReactNode;
+  tripSlug: string;
+  initialActivities?: Activity[];
+};
+
+export function ScheduleActivitiesProvider({ children, tripSlug, initialActivities = [] }: Props) {
+  const [activities, setActivitiesState] = useState<Activity[]>(initialActivities);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bcRef = useRef<BroadcastChannel | null>(null);
 
@@ -51,7 +55,7 @@ export function ScheduleActivitiesProvider({ children }: { children: ReactNode }
     setError(null);
     setIsLoading(true);
     try {
-      const list = await fetchActivitiesFromApi();
+      const list = await fetchActivitiesFromApi(tripSlug);
       setActivitiesState(list);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load schedule.");
@@ -59,19 +63,16 @@ export function ScheduleActivitiesProvider({ children }: { children: ReactNode }
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  }, [tripSlug]);
 
   useEffect(() => {
     if (typeof BroadcastChannel === "undefined") return;
-    const bc = new BroadcastChannel(BC_NAME);
+    const bcName = `trip-schedule-${tripSlug}`;
+    const bc = new BroadcastChannel(bcName);
     bcRef.current = bc;
     bc.onmessage = (ev: MessageEvent) => {
       if (ev.data === "activities-updated") {
-        void fetchActivitiesFromApi()
+        void fetchActivitiesFromApi(tripSlug)
           .then(setActivitiesState)
           .catch(() => setError("Could not refresh schedule."));
       }
@@ -80,11 +81,11 @@ export function ScheduleActivitiesProvider({ children }: { children: ReactNode }
       bc.close();
       bcRef.current = null;
     };
-  }, []);
+  }, [tripSlug]);
 
   const setActivities = useCallback(async (next: Activity[]) => {
     const sorted = sortActivities(next.map(normalizeActivity));
-    const res = await fetch("/api/activities", {
+    const res = await fetch(`/api/trips/${tripSlug}/activities`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(sorted),
@@ -105,7 +106,7 @@ export function ScheduleActivitiesProvider({ children }: { children: ReactNode }
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [tripSlug]);
 
   const value: ScheduleContextValue = {
     activities,
@@ -122,12 +123,15 @@ export function ScheduleActivitiesProvider({ children }: { children: ReactNode }
   );
 }
 
-export function useScheduleActivities(): ScheduleContextValue {
+export function useTripActivities(): ScheduleContextValue {
   const ctx = useContext(ScheduleContext);
   if (!ctx) {
     throw new Error(
-      "useScheduleActivities must be used within ScheduleActivitiesProvider",
+      "useTripActivities must be used within ScheduleActivitiesProvider",
     );
   }
   return ctx;
 }
+
+// Backwards compat alias
+export const useScheduleActivities = useTripActivities;
