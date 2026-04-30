@@ -11,31 +11,38 @@ CREATE TABLE "trips" (
     CONSTRAINT "trips_pkey" PRIMARY KEY ("id")
 );
 
--- Seed the bachelor trip from existing schedule_page_settings data
--- Dates: Fri 10 Apr – Sun 12 Apr 2026 Prague time (UTC stored)
+-- Seed the bachelor trip
 INSERT INTO "trips" ("id", "title", "subtitle", "timezone", "start_date", "end_date", "good_to_know_md")
-SELECT
+VALUES (
     'bachelor',
-    COALESCE((SELECT "title" FROM "schedule_page_settings" WHERE "id" = 'default'), 'Bachelor Schedule'),
-    COALESCE((SELECT "subtitle" FROM "schedule_page_settings" WHERE "id" = 'default'), ''),
+    'Bachelor Schedule',
+    '',
     'Europe/Prague',
-    '2026-04-09T22:00:00.000Z',
-    '2026-04-12T21:59:59.999Z',
+    '2026-04-09 22:00:00',
+    '2026-04-12 21:59:59.999',
     '**Oscar** – [+46 70 147 66 88](tel:+46701476688)
 
 **Filip** – [+46 70 748 45 83](tel:+46707484583)
 
 **Main door code:** 9517#'
-WHERE NOT EXISTS (SELECT 1 FROM "trips" WHERE "id" = 'bachelor');
+)
+ON CONFLICT ("id") DO NOTHING;
 
--- Add trip_id to activities with default
-ALTER TABLE "activities" ADD COLUMN "trip_id" TEXT;
-UPDATE "activities" SET "trip_id" = 'bachelor';
-ALTER TABLE "activities" ALTER COLUMN "trip_id" SET NOT NULL;
+-- Add trip_id to activities with default (only if column doesn't exist yet)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'activities' AND column_name = 'trip_id'
+    ) THEN
+        ALTER TABLE "activities" ADD COLUMN "trip_id" TEXT;
+        UPDATE "activities" SET "trip_id" = 'bachelor' WHERE "trip_id" IS NULL;
+        ALTER TABLE "activities" ALTER COLUMN "trip_id" SET NOT NULL;
 
--- Add foreign key
-ALTER TABLE "activities" ADD CONSTRAINT "activities_trip_id_fkey"
-    FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        ALTER TABLE "activities" ADD CONSTRAINT "activities_trip_id_fkey"
+            FOREIGN KEY ("trip_id") REFERENCES "trips"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
--- Drop old settings table (data migrated above)
+-- Drop old settings table if it exists
 DROP TABLE IF EXISTS "schedule_page_settings";
